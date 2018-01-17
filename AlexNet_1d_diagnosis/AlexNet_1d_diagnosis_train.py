@@ -8,11 +8,11 @@ from sklearn import decomposition
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from LeNet5_dignosis import LeNet5_Bearing_inference
+from AlexNet_1d_diagnosis import AlexNet_1d_diagnosis_inference
 from LeNet5_dignosis import matfile_reader
 
 BATCH_SIZE = 100
-LEARNING_RATE_BASE = 0.04
+LEARNING_RATE_BASE = 0.0035
 LEARNING_RATE_DECAY = 0.99
 REGULARIZATION_RATE = 0.0001
 TRAINING_STEPS = 60000
@@ -43,15 +43,14 @@ def train(data_samples,data_labels,data_tag):
     # 定义输出为4维矩阵的placeholder
     x = tf.placeholder(tf.float32, [
         BATCH_SIZE,
-        LeNet5_Bearing_inference.IMAGE_SIZE,
-        LeNet5_Bearing_inference.IMAGE_SIZE,
-        LeNet5_Bearing_inference.IMAGE_CHANNELS],
+        AlexNet_1d_diagnosis_inference.IMAGE_WIDTH,
+        AlexNet_1d_diagnosis_inference.IMAGE_CHANNELS],
                        name='x-input')
 
-    y_ = tf.placeholder(tf.float32, [None, LeNet5_Bearing_inference.IMAGE_LABELS], name='y-input')
+    y_ = tf.placeholder(tf.float32, [None, AlexNet_1d_diagnosis_inference.IMAGE_LABELS], name='y-input')
 
     regularizer = tf.contrib.layers.l2_regularizer(REGULARIZATION_RATE)
-    hidden,y = LeNet5_Bearing_inference.inference(x, False, regularizer)
+    hidden,y = AlexNet_1d_diagnosis_inference.inference(x, False, regularizer)
     global_step = tf.Variable(0, trainable=False)
 
     # 定义损失函数、学习率、滑动平均操作以及训练过程。
@@ -72,8 +71,8 @@ def train(data_samples,data_labels,data_tag):
 
 
     # 初始化TensorFlow持久化类。
-    saver = tf.train.Saver()
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
+    saver = tf.train.Saver()
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         tf.global_variables_initializer().run()
         for i in range(TRAINING_STEPS):
@@ -81,9 +80,8 @@ def train(data_samples,data_labels,data_tag):
 
             reshaped_xs = np.reshape(xs, (
                 BATCH_SIZE,
-                LeNet5_Bearing_inference.IMAGE_SIZE,
-                LeNet5_Bearing_inference.IMAGE_SIZE,
-                LeNet5_Bearing_inference.IMAGE_CHANNELS))
+                AlexNet_1d_diagnosis_inference.IMAGE_WIDTH,
+                AlexNet_1d_diagnosis_inference.IMAGE_CHANNELS))
             _,loss_value, step = sess.run([train_op,loss,global_step], feed_dict={x: reshaped_xs, y_: ys})
             if i % 100 == 0:
                 print("After %d training step(s), loss on training batch is %g" % (step, loss_value))

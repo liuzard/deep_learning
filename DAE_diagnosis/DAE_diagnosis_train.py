@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-from AlexNet import AlexNet_inference
+from DAE_diagnosis import DAE_diagnosis_inference
 
 BATCH_SIZE = 100
 LEARNING_RATE_BASE = 0.05
@@ -13,22 +13,21 @@ REGULARIZATION_RATE = 0.001
 TRAINING_STEPS = 20000
 MOVING_AVERAGE_DECAY = 0.99
 SAVE_PATH="E:/MNIST/ALexNet"
-MODEL_NAME="LetNet5_mnist_model.ckpt"
+MODEL_NAME="AlexNet_1d_mnist_model.ckpt"
 
 
 def train(mnist):
     # 定义输出为4维矩阵的placeholder
     x = tf.placeholder(tf.float32, [
         BATCH_SIZE,
-        AlexNet_inference.IMAGE_SIZE,
-        AlexNet_inference.IMAGE_SIZE,
-        AlexNet_inference.IMAGE_CHANNELS],
+        DAE_diagnosis_inference.IMAGE_WIDTH,
+        DAE_diagnosis_inference.IMAGE_CHANNELS],
                        name='x-input')
 
-    y_ = tf.placeholder(tf.float32, [None, AlexNet_inference.IMAGE_LABELS], name='y-input')
+    y_ = tf.placeholder(tf.float32, [None, DAE_diagnosis_inference.IMAGE_LABELS], name='y-input')
 
     regularizer = tf.contrib.layers.l2_regularizer(REGULARIZATION_RATE)
-    y = AlexNet_inference.inference(x, False, regularizer)
+    y = DAE_diagnosis_inference.inference(x, False, regularizer)
     global_step = tf.Variable(0, trainable=False)
 
     # 定义损失函数、学习率、滑动平均操作以及训练过程。
@@ -50,16 +49,16 @@ def train(mnist):
 
     # 初始化TensorFlow持久化类。
     saver = tf.train.Saver()
-    with tf.Session() as sess:
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
+    with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         tf.global_variables_initializer().run()
         for i in range(TRAINING_STEPS):
             xs, ys = mnist.train.next_batch(BATCH_SIZE)
 
             reshaped_xs = np.reshape(xs, (
                 BATCH_SIZE,
-                AlexNet_inference.IMAGE_SIZE,
-                AlexNet_inference.IMAGE_SIZE,
-                AlexNet_inference.IMAGE_CHANNELS))
+                DAE_diagnosis_inference.IMAGE_WIDTH,
+                DAE_diagnosis_inference.IMAGE_CHANNELS))
             _, loss_value, step = sess.run([train_op, loss, global_step], feed_dict={x: reshaped_xs, y_: ys})
             if i % 100 == 0:
                 print("After %d training step(s), loss on training batch is %g" % (step, loss_value))

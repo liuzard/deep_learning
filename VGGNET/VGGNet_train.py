@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-from AlexNet import AlexNet_inference
+from VGGNET import VGGNet_inference
 
 BATCH_SIZE = 100
 LEARNING_RATE_BASE = 0.05
@@ -20,15 +20,15 @@ def train(mnist):
     # 定义输出为4维矩阵的placeholder
     x = tf.placeholder(tf.float32, [
         BATCH_SIZE,
-        AlexNet_inference.IMAGE_SIZE,
-        AlexNet_inference.IMAGE_SIZE,
-        AlexNet_inference.IMAGE_CHANNELS],
+        VGGNet_inference.IMAGE_SIZE,
+        VGGNet_inference.IMAGE_SIZE,
+        VGGNet_inference.IMAGE_CHANNELS],
                        name='x-input')
 
-    y_ = tf.placeholder(tf.float32, [None, AlexNet_inference.IMAGE_LABELS], name='y-input')
+    y_ = tf.placeholder(tf.float32, [None, VGGNet_inference.IMAGE_LABELS], name='y-input')
 
     regularizer = tf.contrib.layers.l2_regularizer(REGULARIZATION_RATE)
-    y = AlexNet_inference.inference(x, False, regularizer)
+    y = VGGNet_inference.inference(x, False, regularizer)
     global_step = tf.Variable(0, trainable=False)
 
     # 定义损失函数、学习率、滑动平均操作以及训练过程。
@@ -57,9 +57,9 @@ def train(mnist):
 
             reshaped_xs = np.reshape(xs, (
                 BATCH_SIZE,
-                AlexNet_inference.IMAGE_SIZE,
-                AlexNet_inference.IMAGE_SIZE,
-                AlexNet_inference.IMAGE_CHANNELS))
+                VGGNet_inference.IMAGE_SIZE,
+                VGGNet_inference.IMAGE_SIZE,
+                VGGNet_inference.IMAGE_CHANNELS))
             _, loss_value, step = sess.run([train_op, loss, global_step], feed_dict={x: reshaped_xs, y_: ys})
             if i % 100 == 0:
                 print("After %d training step(s), loss on training batch is %g" % (step, loss_value))
